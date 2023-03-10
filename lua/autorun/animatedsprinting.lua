@@ -3,7 +3,16 @@ AnimatedImmersiveSprinting = {Sprinters = {}}
 local arse = AnimatedImmersiveSprinting
 local table_IsEmpty = table.IsEmpty
 local math_abs = math.abs
-local maxside = 200
+local maxside = 240
+
+local TwoHandedHoldTypes = {
+    ar2 = true,
+    smg = true,
+    rpg = true,
+    physgun = true,
+    crossbow = true,
+    shotgun = true
+}
 
 local function GetForwardVelocity(ply)
     return ply:EyeAngles():Forward():Dot(ply:GetVelocity())
@@ -14,13 +23,15 @@ local function GetSideVelocity(ply)
 end
 
 local function AddHook()
-    hook.Add("StartCommand", "AnimatedImmersiveSprinting_Command", function(ply, cmd)
+    hook.Add("SetupMove", "AnimatedImmersiveSprinting_Move", function(ply, mv)
         local forw = GetForwardVelocity(ply)
         local side = GetSideVelocity(ply)
 
-        if forw <= 0 or side > maxside then
-            cmd:RemoveKey(IN_SPEED)
+        if (forw <= 0 or side > maxside) or ply:GetSuitPower() <= 1 then
             ply.ImmerseSprint = nil
+            if ply:IsOnGround() then
+                mv:SetMaxClientSpeed(ply:GetWalkSpeed())
+            end
         else
             ply.ImmerseSprint = true
         end
@@ -29,13 +40,17 @@ local function AddHook()
     hook.Add("TranslateActivity", "AnimatedImmersiveSprinting_Hook", function(ply, act)
 
         if ply.ImmerseSprint and act == ACT_MP_RUN then
-            return ply:GetSequenceActivity(ply:LookupSequence("wos_mma_sprint_rifle_all"))
+            if ply:GetActiveWeapon() and TwoHandedHoldTypes[ply:GetActiveWeapon():GetHoldType()] then
+                
+                return ply:GetSequenceActivity(ply:LookupSequence("wos_mma_sprint_rifle_all"))
+            end
+            return ply:GetSequenceActivity(ply:LookupSequence("wos_mma_sprint_all"))
         end
     end)
 end
 
 local function RemoveHook()
-    hook.Remove("StartCommand", "AnimatedImmersiveSprinting_Command")
+    hook.Remove("SetupMove", "AnimatedImmersiveSprinting_Move")
     hook.Remove("TranslateActivity", "AnimatedImmersiveSprinting_Hook")
 end
 
