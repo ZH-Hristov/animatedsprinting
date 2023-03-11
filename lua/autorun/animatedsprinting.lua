@@ -11,7 +11,8 @@ local TwoHandedHoldTypes = {
     rpg = true,
     physgun = true,
     crossbow = true,
-    shotgun = true
+    shotgun = true,
+    passive = true
 }
 
 local function GetForwardVelocity(ply)
@@ -28,19 +29,19 @@ local function AddHook()
         local side = GetSideVelocity(ply)
 
         if (forw <= 0 or side > maxside) or ply:GetSuitPower() <= 1 then
-            ply.ImmerseSprint = nil
+            ply:SetNWBool("ImmerseSprint", nil)
             if ply:IsOnGround() then
                 mv:SetMaxClientSpeed(ply:GetWalkSpeed())
             end
         else
-            ply.ImmerseSprint = true
+            ply:SetNWBool("ImmerseSprint", true)
         end
     end)
 
     hook.Add("TranslateActivity", "AnimatedImmersiveSprinting_Hook", function(ply, act)
 
-        if ply.ImmerseSprint and act == ACT_MP_RUN then
-            if ply:GetActiveWeapon() and TwoHandedHoldTypes[ply:GetActiveWeapon():GetHoldType()] then
+        if ply:GetNWBool("ImmerseSprint", nil) == true and act == ACT_MP_RUN then
+            if IsValid(ply:GetActiveWeapon()) and TwoHandedHoldTypes[ply:GetActiveWeapon():GetHoldType()] then
                 
                 return ply:GetSequenceActivity(ply:LookupSequence("wos_mma_sprint_rifle_all"))
             end
