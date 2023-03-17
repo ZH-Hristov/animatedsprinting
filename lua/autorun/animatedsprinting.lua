@@ -1,9 +1,15 @@
 AnimatedImmersiveSprinting = {Sprinters = {}}
 
+local cvars = {
+    enabled = CreateConVar("AnimatedSprinting_enabled", 1, bit.band(FCVAR_ARCHIVE, FCVAR_REPLICATED), "Enable or disable animated sprinting.", 0, 1),
+    forceforward = CreateConVar("AnimatedSprinting_forwardonly", 1, bit.band(FCVAR_ARCHIVE, FCVAR_REPLICATED), "Force sprinting to only work when running forward.", 0, 1),
+    maxsidevel = CreateConVar("AnimatedSprinting_maxsidevelocity", 0.7, bit.band(FCVAR_ARCHIVE, FCVAR_REPLICATED), "Max side velocity range (0 to 1) player can move at before sprinting is forced off. Default is 0.7 Requires forwardonly to be enabled.", 0, 1)
+}
+
 local arse = AnimatedImmersiveSprinting
 local table_IsEmpty = table.IsEmpty
 local math_abs = math.abs
-local maxside = 240
+local round = math.Round
 
 local TwoHandedHoldTypes = {
     ar2 = true,
@@ -26,9 +32,9 @@ end
 local function AddHook()
     hook.Add("SetupMove", "AnimatedImmersiveSprinting_Move", function(ply, mv)
         local forw = GetForwardVelocity(ply)
-        local side = GetSideVelocity(ply)
+        local side = round(GetSideVelocity(ply) / ply:GetRunSpeed(), 1)
 
-        if (forw <= 0 or side > maxside) or ply:GetSuitPower() <= 1 then
+        if (forw <= 0 or side > cvars.maxsidevel:GetFloat()) and cvars.forceforward:GetBool() or ply:GetSuitPower() <= 1 then
             ply:SetNWBool("ImmerseSprint", nil)
             if ply:IsOnGround() then
                 mv:SetMaxClientSpeed(ply:GetWalkSpeed())
@@ -56,6 +62,8 @@ local function RemoveHook()
 end
 
 hook.Add("KeyPress", "AnimatedImmersiveSprinting_HandleKeyPress", function(ply, key)
+    if !cvars.enabled:GetBool() then return end
+
     if key == IN_SPEED then
         arse.AddSprinter(ply)
     end
