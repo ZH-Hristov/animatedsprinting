@@ -81,7 +81,7 @@ hook.Add("SetupMove", "AnimatedImmersiveSprinting_Move", function(ply, mv)
     if CanSprint(ply) then
         ply:SetNWBool("ImmerseSprint", true)
     else
-        ply:SetNWBool("ImmerseSprint", nil)
+        ply:SetNWBool("ImmerseSprint", false)
         if ply:IsOnGround() and ply:GetMoveType() == MOVETYPE_WALK then
             mv:SetMaxClientSpeed(ply:GetWalkSpeed())
         end
