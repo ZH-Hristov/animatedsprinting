@@ -44,21 +44,21 @@ local function AddHook()
         end
     end)
 
-    hook.Add("TranslateActivity", "AnimatedImmersiveSprinting_Hook", function(ply, act)
+    hook.Add("CalcMainActivity", "AnimatedImmersiveSprinting_Hook", function(ply, act)
 
         if ply:GetNWBool("ImmerseSprint", nil) == true and act == ACT_MP_RUN then
             if IsValid(ply:GetActiveWeapon()) and TwoHandedHoldTypes[ply:GetActiveWeapon():GetHoldType()] then
                 
-                return ply:GetSequenceActivity(ply:LookupSequence("wos_mma_sprint_rifle_all"))
+                return nil, ply:LookupSequence("wos_mma_sprint_rifle_all")
             end
-            return ply:GetSequenceActivity(ply:LookupSequence("wos_mma_sprint_all"))
+            return nil, ply:LookupSequence("wos_mma_sprint_all")
         end
     end)
 end
 
 local function RemoveHook()
     hook.Remove("SetupMove", "AnimatedImmersiveSprinting_Move")
-    hook.Remove("TranslateActivity", "AnimatedImmersiveSprinting_Hook")
+    hook.Remove("CalcMainActivity", "AnimatedImmersiveSprinting_Hook")
 end
 
 hook.Add("KeyPress", "AnimatedImmersiveSprinting_HandleKeyPress", function(ply, key)
