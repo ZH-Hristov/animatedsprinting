@@ -36,7 +36,7 @@ local function AddHook()
 
         if (forw <= 0 or side > cvars.maxsidevel:GetFloat()) and cvars.forceforward:GetBool() or ply:GetSuitPower() <= 1 then
             ply:SetNWBool("ImmerseSprint", nil)
-            if ply:IsOnGround() then
+            if ply:IsOnGround() and ply:GetMoveType() == MOVETYPE_WALK then
                 mv:SetMaxClientSpeed(ply:GetWalkSpeed())
             end
         else
