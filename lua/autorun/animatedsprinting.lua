@@ -82,7 +82,7 @@ hook.Add("SetupMove", "AnimatedImmersiveSprinting_Move", function(ply, mv)
         ply:SetNWBool("ImmerseSprint", true)
     else
         ply:SetNWBool("ImmerseSprint", false)
-        if ply:IsOnGround() and ply:GetMoveType() == MOVETYPE_WALK then
+        if as_cvars.forceforward:GetBool() and ply:IsSprinting() and ply:IsOnGround() and ply:GetMoveType() == MOVETYPE_WALK and mv:GetMaxClientSpeed() >= ply:GetWalkSpeed() then
             mv:SetMaxClientSpeed(ply:GetWalkSpeed())
         end
     end
