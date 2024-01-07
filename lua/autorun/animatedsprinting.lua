@@ -76,7 +76,7 @@ local function CanSprint(ply)
 end
 
 hook.Add("SetupMove", "AnimatedImmersiveSprinting_Move", function(ply, mv)
-    if not as_cvars.enabled then return end
+    if not as_cvars.enabled:GetBool() then return end
 
     if CanSprint(ply) then
         ply:SetNWBool("ImmerseSprint", true)
@@ -89,7 +89,7 @@ hook.Add("SetupMove", "AnimatedImmersiveSprinting_Move", function(ply, mv)
 end)
 
 hook.Add("CalcMainActivity", "AnimatedImmersiveSprinting_Hook", function(ply)
-    if not as_cvars.enabled then return end
+    if not as_cvars.enabled:GetBool() then return end
     if ply:GetNWBool("ImmerseSprint", nil) == true then
         if IsValid(ply:GetActiveWeapon()) and TwoHandedHoldTypes[ply:GetActiveWeapon():GetHoldType()] then
             
