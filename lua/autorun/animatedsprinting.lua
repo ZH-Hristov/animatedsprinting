@@ -1,22 +1,26 @@
 AnimatedImmersiveSprinting = {Sprinters = {}}
-local loadedConfig = {}
+local loadedConfig = {
+    enabled = 1,
+    forceforward = 1,
+    maxsidevel = 0.7,
+    limitmousemovement = 0.3
+}
 
 if file.Exists("animatedsprintingserverconfig.json", "DATA") and util.JSONToTable(file.Read("animatedsprintingserverconfig.json")) then
     print("Animated Sprinting - Loading saved server config")
 
-    loadedConfig = util.JSONToTable(file.Read("animatedsprintingserverconfig.json"))
-else
-    loadedConfig = {
-        enabled = 1,
-        forceforward = 1,
-        maxsidevel = 0.7
-    }
+    local nlc = util.JSONToTable(file.Read("animatedsprintingserverconfig.json"))
+
+    for k, v in pairs(nlc) do
+        loadedConfig[k] = v
+    end
 end
 
 local as_cvars = {
-    enabled = CreateConVar("AnimatedSprinting_enabled", loadedConfig.enabled, bit.band(FCVAR_REPLICATED), "Enable or disable animated sprinting.", 0, 1),
-    forceforward = CreateConVar("AnimatedSprinting_forwardonly", loadedConfig.forceforward, bit.band(FCVAR_REPLICATED), "Force sprinting to only work when running forward.", 0, 1),
-    maxsidevel = CreateConVar("AnimatedSprinting_maxsidevelocity", loadedConfig.maxsidevel, bit.band(FCVAR_REPLICATED), "Max side velocity range (0 to 1) player can move at before sprinting is forced off. Default is 0.7 Requires forwardonly to be enabled.", 0, 1)
+    enabled = CreateConVar("AnimatedSprinting_enabled", loadedConfig.enabled, FCVAR_REPLICATED, "Enable or disable animated sprinting.", 0, 1),
+    forceforward = CreateConVar("AnimatedSprinting_forwardonly", loadedConfig.forceforward, FCVAR_REPLICATED, "Force sprinting to only work when running forward.", 0, 1),
+    maxsidevel = CreateConVar("AnimatedSprinting_maxsidevelocity", loadedConfig.maxsidevel, FCVAR_REPLICATED, "Max side velocity range (0 to 1) player can move at before sprinting is forced off. Default is 0.7 Requires forwardonly to be enabled.", 0, 1),
+    limitmousemovement = CreateConVar("AnimatedSprinting_limitmousemovement", loadedConfig.limitmousemovement, FCVAR_REPLICATED, "Max turn speed percentage while sprinting. Float from 0 to 1. Set to 1 to disable.", 0, 1)
 }
 
 local function saveConfig()
@@ -24,7 +28,8 @@ local function saveConfig()
     local t = {
         enabled = as_cvars.enabled:GetInt(),
         forceforward = as_cvars.forceforward:GetFloat(),
-        maxsidevel = as_cvars.maxsidevel:GetFloat()
+        maxsidevel = as_cvars.maxsidevel:GetFloat(),
+        limitmousemovement = as_cvars.limitmousemovement:GetFloat()
     }
 
     file.Write("animatedsprintingserverconfig.json", util.TableToJSON(t))
@@ -99,24 +104,12 @@ hook.Add("CalcMainActivity", "AnimatedImmersiveSprinting_Hook", function(ply)
     end
 end)
 
-hook.Add("KeyPress", "AnimatedImmersiveSprinting_HandleKeyPress", function(ply, key)
-    if !as_cvars.enabled:GetBool() then return end
+if CLIENT then
+    hook.Add("AdjustMouseSensitivity", "AnimatedImmersiveSprinting_LimitMouseMovement", function(sens)
+        if not as_cvars.enabled:GetBool() then return end
+        if as_cvars.limitmousemovement:GetFloat() >= 1 then return end
+        if not LocalPlayer():GetNWBool("ImmerseSprint") then return end
 
-    if key == IN_SPEED then
-        arse.AddSprinter(ply)
-    end
-end)
-
-hook.Add("KeyRelease", "AnimatedImmersiveSprinting_HandleKeyRelease", function(ply, key)
-    if key == IN_SPEED then
-        arse.RemoveSprinter(ply)
-    end
-end)
-
-arse.AddSprinter = function(ply)
-    arse.Sprinters[ply] = true
-end
-
-arse.RemoveSprinter = function(ply)
-    arse.Sprinters[ply] = nil
+        return as_cvars.limitmousemovement:GetFloat()
+    end)
 end
