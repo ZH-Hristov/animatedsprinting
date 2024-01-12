@@ -3,7 +3,7 @@ local loadedConfig = {
     enabled = 1,
     forceforward = 1,
     maxsidevel = 0.7,
-    limitmousemovement = 0.3
+    limitmousemovement = 1
 }
 
 if file.Exists("animatedsprintingserverconfig.json", "DATA") and util.JSONToTable(file.Read("animatedsprintingserverconfig.json")) then
